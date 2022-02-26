@@ -168,18 +168,28 @@ class GraphConvolution(Layer):
             x = sparse_dropout(x, 1-self.dropout, self.num_features_nonzero)
         else:
             x = tf.nn.dropout(x, 1-self.dropout)
+        print("x")
+        print(x.shape) # sparse_inputs: (?, ?), (?, hidden1)
 
         # convolve
         supports = list()
+        print("self.support")
+        print(len(self.support)) # 1, 1
         for i in range(len(self.support)):
             if not self.featureless:
                 pre_sup = dot(x, self.vars['weights_' + str(i)],
                               sparse=self.sparse_inputs)
             else:
                 pre_sup = self.vars['weights_' + str(i)]
+            print("pre_sup")
+            print(pre_sup.shape) # dot: (顶点数量, hidden1), dot: (?, 类别数量)
             support = dot(self.support[i], pre_sup, sparse=True)
+            print("support")
+            print(support.shape) # (?, hidden1), (?, 类别数量)
             supports.append(support)
         output = tf.add_n(supports)
+        print("output")
+        print(output.shape) # (?, hidden1), (?, 类别数量)
 
         # bias
         if self.bias:
